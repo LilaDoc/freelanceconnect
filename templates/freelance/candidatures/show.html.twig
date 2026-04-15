@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidature - {{ candidature.mission.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_candidatures') }}">Mes Candidatures</a></li>
+            <li class="breadcrumb-item active">{{ candidature.mission.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Ma candidature</h4>
+                    {% set statusCode = candidature.status.code %}
+                    <span class="badge bg-{{ statusCode == 'ACCEPTED' ? 'success' : (statusCode == 'REJECTED' ? 'danger' : 'warning') }} fs-6">
+                        {{ candidature.status.label ?? statusCode }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5>Message de motivation</h5>
+                    <p class="border rounded p-3 bg-light">{{ candidature.motivationMessage|nl2br }}</p>
+
+                    {% if candidature.projectLink %}
+                        <h5>Lien projet</h5>
+                        <p>
+                            <a href="{{ candidature.projectLink }}" target="_blank" rel="noopener">
+                                <i class="bi bi-link-45deg"></i> {{ candidature.projectLink }}
+                            </a>
+                        </p>
+                    {% endif %}
+
+                    <h5>CV</h5>
+                    <p>
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-file-pdf"></i> CV téléchargé
+                        </span>
+                    </p>
+
+                    <hr>
+
+                    <p class="text-muted mb-0">
+                        <small>Candidature envoyée le {{ candidature.createdAt|date('d/m/Y à H:i') }}</small>
+                    </p>
+                </div>
+                <div class="card-footer">
+                    {% if candidature.status.code == 'PENDING' %}
+                        <button type="button" class="btn btn-danger" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteModal">
+                            <i class="bi bi-x-circle"></i> Retirer ma candidature
+                        </button>
+                    {% endif %}
+                    <a href="{{ path('app_freelance_candidatures') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour à mes candidatures
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Mission</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ candidature.mission.title }}</h6>
+                    <p class="text-muted small">{{ candidature.mission.description|slice(0, 150) }}...</p>
+                    
+                    <dl class="mb-0">
+                        <dt><i class="bi bi-cash"></i> Budget</dt>
+                        <dd class="text-success fw-bold">{{ candidature.mission.budget }} €</dd>
+                        
+                        <dt><i class="bi bi-calendar"></i> Deadline</dt>
+                        <dd>{{ candidature.mission.deadline|date('d/m/Y') }}</dd>
+                        
+                        <dt><i class="bi bi-folder"></i> Catégorie</dt>
+                        <dd>{{ candidature.mission.category.label ?? '-' }}</dd>
+                        
+                        <dt><i class="bi bi-person"></i> Client</dt>
+                        <dd>{{ candidature.mission.client.firstName ?? candidature.mission.client.email }}</dd>
+                    </dl>
+                    
+                    <a href="{{ path('app_freelance_offre_show', {id: candidature.mission.id}) }}" class="btn btn-outline-primary btn-sm mt-3">
+                        <i class="bi bi-eye"></i> Voir l'offre
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if candidature.status.code == 'PENDING' %}
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Retirer la candidature</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir retirer votre candidature pour 
+                    <strong>« {{ candidature.mission.title }} »</strong> ?
+                    <p class="text-muted mt-2 mb-0">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form action="{{ path('app_freelance_candidature_delete', {id: candidature.id}) }}" method="post" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> Retirer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

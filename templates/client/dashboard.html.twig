@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Client{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Tableau de bord Client</h1>
+    <p>Bienvenue, {{ user.firstName ?? user.email }}</p>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mes Offres de Mission</h5>
+                    <p class="card-text">Gérez vos offres de mission</p>
+                    <a href="{{ path('app_client_offres') }}" class="btn btn-primary">Voir mes offres</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Candidatures</h5>
+                    <p class="card-text">Consultez les candidatures reçues</p>
+                    <a href="{{ path('app_client_candidatures')}}" class="btn btn-primary">Voir les candidatures</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Factures</h5>
+                    <p class="card-text">Consultez vos factures</p>
+                    <a href="#" class="btn btn-primary">Voir les factures</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

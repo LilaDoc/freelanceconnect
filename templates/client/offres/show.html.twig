@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ offre.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ offre.title }}</h1>
+        <div>
+            <a href="{{ path('app_client_offre_edit', {id: offre.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> Supprimer
+            </button>
+            {% if offre.invoiceNumber %}
+                <a href="{{ path('app_client_offre_facture', {id: offre.id}) }}" class="btn btn-info">
+                    <i class="bi bi-receipt"></i> Voir la facture
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ offre.description|nl2br }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Informations</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Catégorie</dt>
+                        <dd>{{ offre.category.label ?? '-' }}</dd>
+
+                        <dt>Budget</dt>
+                        <dd><strong>{{ offre.budget }} €</strong></dd>
+
+                        <dt>Date limite</dt>
+                        <dd>{{ offre.deadline|date('d/m/Y') }}</dd>
+
+                        <dt>Langue</dt>
+                        <dd>{{ offre.language ?? 'Non spécifié' }}</dd>
+
+                        <dt>Statut</dt>
+                        <dd>
+                            <span class="badge bg-{{ offre.status.code == 'COMPLETED' ? 'success' : (offre.status.code == 'IN_PROGRESS' ? 'primary' : 'secondary') }}">
+                                {{ offre.status.label ?? 'Non défini' }}
+                            </span>
+                        </dd>
+
+                        <dt>Freelancer assigné</dt>
+                        <dd>
+                            {% if offre.freelanceAssigned and offre.freelanceServiceProvider %}
+                                {{ offre.freelanceServiceProvider.firstName }} {{ offre.freelanceServiceProvider.lastName }}
+                            {% else %}
+                                <span class="text-muted">Non assigné</span>
+                            {% endif %}
+                        </dd>
+
+                        {% if offre.hasFirstPayment %}
+                            <dt>Acompte</dt>
+                            <dd>{{ offre.firstPaymentValue }} €</dd>
+                        {% endif %}
+
+                        <dt>Créée le</dt>
+                        <dd>{{ offre.createdAt|date('d/m/Y H:i') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ path('app_client_offres') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+{# Modal de confirmation de suppression #}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer l'offre <strong>« {{ offre.title }} »</strong> ?
+                <p class="text-muted mt-2 mb-0">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ path('app_client_offre_delete', {id: offre.id}) }}" method="post" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offre.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

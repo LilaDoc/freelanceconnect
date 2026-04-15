@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Freelancer{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Tableau de bord Freelancer</h1>
+    <p>Bienvenue, {{ user.firstName ?? user.email }}</p>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-briefcase"></i> Offres de Mission</h5>
+                    <p class="card-text">Consultez les offres disponibles</p>
+                    <a href="{{ path('app_freelance_offres') }}" class="btn btn-primary">Voir les offres</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-file-earmark-text"></i> Mes Candidatures</h5>
+                    <p class="card-text">Suivez vos candidatures</p>
+                    <a href="{{ path('app_freelance_candidatures') }}" class="btn btn-primary">Voir mes candidatures</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-clock-history"></i> Temps enregistré</h5>
+                    <p class="card-text">Gérez votre temps de travail</p>
+                    <a href="#" class="btn btn-primary disabled">Bientôt disponible</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

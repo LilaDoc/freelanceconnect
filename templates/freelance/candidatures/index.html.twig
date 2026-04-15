@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Candidatures{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Mes Candidatures</li>
+        </ol>
+    </nav>
+
+    <h1>Mes Candidatures</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% if candidatures is empty %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Vous n'avez pas encore postulé à une offre de mission.
+            <a href="{{ path('app_freelance_offres') }}" class="alert-link">Voir les offres disponibles</a>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mission</th>
+                        <th>Client</th>
+                        <th>Budget</th>
+                        <th>Date candidature</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for candidature in candidatures %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_freelance_offre_show', {id: candidature.mission.id}) }}">
+                                    {{ candidature.mission.title }}
+                                </a>
+                            </td>
+                            <td>{{ candidature.mission.client.firstName ?? candidature.mission.client.email }}</td>
+                            <td>{{ candidature.mission.budget }} €</td>
+                            <td>{{ candidature.createdAt|date('d/m/Y H:i') }}</td>
+                            <td>
+                                {% set statusCode = candidature.status.code %}
+                                <span class="badge bg-{{ statusCode == 'ACCEPTED' ? 'success' : (statusCode == 'REJECTED' ? 'danger' : 'warning') }}">
+                                    {{ candidature.status.label ?? statusCode }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ path('app_freelance_candidature_show', {id: candidature.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if candidature.status.code == 'PENDING' %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ candidature.id }}">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Modals de confirmation de suppression #}
+        {% for candidature in candidatures %}
+            {% if candidature.status.code == 'PENDING' %}
+                <div class="modal fade" id="deleteModal{{ candidature.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Retirer la candidature</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                Êtes-vous sûr de vouloir retirer votre candidature pour 
+                                <strong>« {{ candidature.mission.title }} »</strong> ?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <form action="{{ path('app_freelance_candidature_delete', {id: candidature.id}) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-x-circle"></i> Retirer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <a href="{{ path('app_freelancer_dashboard') }}" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left"></i> Retour au dashboard
+    </a>
+</div>
+{% endblock %}

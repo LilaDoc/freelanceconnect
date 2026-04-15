@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ offre.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_offres') }}">Offres</a></li>
+            <li class="breadcrumb-item active">{{ offre.title }}</li>
+        </ol>
+    </nav>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">{{ offre.title }}</h2>
+            <span class="badge bg-{{ offre.status.code == 'PUBLISHED' ? 'success' : 'secondary' }} fs-6">
+                {{ offre.status.label ?? 'Non défini' }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Description</h5>
+                    <p class="border rounded p-3 bg-light">{{ offre.description|nl2br }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6><i class="bi bi-folder"></i> Catégorie</h6>
+                            <p>{{ offre.category.label ?? '-' }}</p>
+                            
+                            <h6><i class="bi bi-cash"></i> Budget</h6>
+                            <p class="fs-4 text-success fw-bold">{{ offre.budget }} €</p>
+                            
+                            <h6><i class="bi bi-calendar"></i> Deadline</h6>
+                            <p>{{ offre.deadline|date('d/m/Y') }}</p>
+                            
+                            <h6><i class="bi bi-translate"></i> Langue</h6>
+                            <p>{{ offre.language ?? 'Non spécifié' }}</p>
+                            
+                            <h6><i class="bi bi-person"></i> Client</h6>
+                            <p>{{ offre.client.firstName ?? offre.client.email }}</p>
+                            
+                            <h6><i class="bi bi-clock"></i> Publiée le</h6>
+                            <p>{{ offre.createdAt|date('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('app_freelance_offre_postuler', {id: offre.id}) }}" class="btn btn-success">
+                <i class="bi bi-send"></i> Postuler à cette offre
+            </a>
+            <a href="{{ path('app_freelance_offres') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux offres
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

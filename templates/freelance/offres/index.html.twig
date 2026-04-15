@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Offres de Mission{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Offres de Mission</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Offres de Mission disponibles</h1>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {% if offres is empty %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune offre de mission disponible pour le moment.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for offre in offres %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ offre.title }}</h5>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-folder"></i> {{ offre.category.label ?? '-' }}
+                            </p>
+                            <p class="card-text">{{ offre.description|slice(0, 150) }}{% if offre.description|length > 150 %}...{% endif %}</p>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-cash text-success"></i> <strong>{{ offre.budget }} €</strong></li>
+                                <li><i class="bi bi-calendar"></i> Deadline: {{ offre.deadline|date('d/m/Y') }}</li>
+                                <li><i class="bi bi-translate"></i> {{ offre.language ?? 'Non spécifié' }}</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ path('app_freelance_offre_show', {id: offre.id}) }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-eye"></i> Voir détails
+                            </a>
+                            <a href="{{ path('app_freelance_offre_postuler', {id: offre.id}) }}" class="btn btn-success btn-sm">
+                                <i class="bi bi-send"></i> Postuler
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <a href="{{ path('app_freelancer_dashboard') }}" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left"></i> Retour au dashboard
+    </a>
+</div>
+{% endblock %}

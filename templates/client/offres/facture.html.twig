@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facture - {{ offre.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Facture</h1>
+    <h5 class="text-muted">Mission : {{ offre.title }}</h5>
+
+    {% if facture %}
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between">
+                <span>Facture n°{{ facture.id }}</span>
+                <span>{{ facture.createdAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Client</h6>
+                        <p>
+                            {{ offre.client.firstName }} {{ offre.client.lastName }}<br>
+                            {% if offre.client.company %}{{ offre.client.company }}<br>{% endif %}
+                            {{ offre.client.street }}<br>
+                            {{ offre.client.postalCode }} {{ offre.client.city }}<br>
+                            {{ offre.client.country }}
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <h6>Freelancer</h6>
+                        {% if offre.freelanceServiceProvider %}
+                            <p>
+                                {{ offre.freelanceServiceProvider.firstName }} {{ offre.freelanceServiceProvider.lastName }}<br>
+                                {% if offre.freelanceServiceProvider.SIRET %}SIRET: {{ offre.freelanceServiceProvider.SIRET }}{% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-end">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ offre.title }}</td>
+                            <td class="text-end">{{ offre.budget }} €</td>
+                        </tr>
+                        {% if offre.hasFirstPayment and offre.firstPaymentValue %}
+                            <tr>
+                                <td>Acompte versé</td>
+                                <td class="text-end">- {{ offre.firstPaymentValue }} €</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-dark">
+                            <th>Total</th>
+                            <th class="text-end">
+                                {% if offre.hasFirstPayment and offre.firstPaymentValue %}
+                                    {{ offre.budget - offre.firstPaymentValue }} €
+                                {% else %}
+                                    {{ offre.budget }} €
+                                {% endif %}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="bi bi-printer"></i> Imprimer
+            </button>
+            <a href="{{ path('app_client_offre_show', {id: offre.id}) }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à l'offre
+            </a>
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">
+            Aucune facture n'a encore été générée pour cette mission.
+        </div>
+        <a href="{{ path('app_client_offre_show', {id: offre.id}) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à l'offre
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

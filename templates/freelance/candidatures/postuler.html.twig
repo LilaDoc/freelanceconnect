@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Postuler - {{ offre.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_offres') }}">Offres</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_offre_show', {id: offre.id}) }}">{{ offre.title }}</a></li>
+            <li class="breadcrumb-item active">Postuler</li>
+        </ol>
+    </nav>
+
+    {% for message in app.flashes('warning') %}
+        <div class="alert alert-warning alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-send"></i> Postuler à : {{ offre.title }}</h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.motivationMessage) }}
+                        {{ form_widget(form.motivationMessage, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.motivationMessage) }}
+                        <div class="form-text">Minimum 50 caractères. Expliquez votre intérêt et vos compétences.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.cv) }}
+                        {{ form_widget(form.cv, {'attr': {'class': 'form-control', 'accept': 'application/pdf'}}) }}
+                        {{ form_errors(form.cv) }}
+                        <div class="form-text">Format PDF uniquement. Maximum 5 Mo.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.projectLink) }}
+                        {{ form_widget(form.projectLink, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.projectLink) }}
+                        <div class="form-text">Obligatoire. Lien vers votre portfolio, GitHub, ou un projet pertinent.</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send"></i> Envoyer ma candidature
+                        </button>
+                        <a href="{{ path('app_freelance_offre_show', {id: offre.id}) }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Annuler
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h5 class="mb-0">Résumé de l'offre</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ offre.title }}</h6>
+                    <p class="text-muted small">{{ offre.description|slice(0, 200) }}{% if offre.description|length > 200 %}...{% endif %}</p>
+                    
+                    <hr>
+                    
+                    <dl class="mb-0">
+                        <dt><i class="bi bi-cash"></i> Budget</dt>
+                        <dd class="text-success fw-bold">{{ offre.budget }} €</dd>
+                        
+                        <dt><i class="bi bi-calendar"></i> Deadline</dt>
+                        <dd>{{ offre.deadline|date('d/m/Y') }}</dd>
+                        
+                        <dt><i class="bi bi-folder"></i> Catégorie</dt>
+                        <dd>{{ offre.category.label ?? '-' }}</dd>
+                        
+                        <dt><i class="bi bi-person"></i> Client</dt>
+                        <dd>{{ offre.client.firstName ?? offre.client.email }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
