@@ -42,6 +42,7 @@ security:
         #Routes public
          - { path: ^/login, roles: PUBLIC_ACCESS }
          - { path: ^/register, roles: PUBLIC_ACCESS }
+         - { path: ^/api, roles: PUBLIC_ACCESS }
         #Route client
          - { path: ^/client, roles: ROLE_CLIENT }
         #Route freelancer
@@ -52,8 +53,8 @@ security:
 when@test:
     security:
         password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
+            # By default, password hashers are resource intensive and slow. This setup
+            # temporarily overrides the password hasher for the test environment.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
                 cost: 4 # Lowest possible value for bcrypt

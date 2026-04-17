@@ -31,6 +31,39 @@
                 <li><i class="bi bi-flag"></i> Statut : {{ mission.status.label ?? '-' }}</li>
             </ul>
         </div>
+        <div class="card-footer d-flex flex-column gap-3">
+            <a href="{{ path('app_freelance_mission_time', {id: mission.id}) }}" class="btn btn-outline-primary">
+                <i class="bi bi-clock"></i> Suivi du temps
+            </a>
+
+            {% if mission.status.code == 'IN_PROGRESS' and not mission.hasFirstPayment %}
+                <form action="{{ path('app_freelance_mission_firstpayment', {id: mission.id}) }}" method="post" class="d-flex gap-2 align-items-end">
+                    <input type="hidden" name="_token" value="{{ csrf_token('firstpayment' ~ mission.id) }}">
+                    <div>
+                        <label class="form-label mb-1">Premier paiement (%)</label>
+                        <select name="value" class="form-select" required>
+                            <option value="">-- Choisir un pourcentage --</option>
+                            <option value="10">10%</option>
+                            <option value="20">20%</option>
+                            <option value="30">30%</option>
+                            <option value="40">40%</option>
+                            <option value="50">50%</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-cash-coin"></i> Enregistrer
+                    </button>
+                </form>
+            {% elseif mission.hasFirstPayment and not mission.firstPaymentActed %}
+                <div class="alert alert-warning mb-0 py-2">
+                    <i class="bi bi-hourglass-split"></i> Premier paiement en attente de confirmation : <strong>{{ mission.firstPaymentValue }} €</strong>
+                </div>
+            {% elseif mission.hasFirstPayment and mission.firstPaymentActed %}
+                <div class="alert alert-success mb-0 py-2">
+                    <i class="bi bi-check-circle"></i> Premier paiement confirmé : <strong>{{ mission.firstPaymentValue }} €</strong>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <a href="{{ path('app_freelance_missions') }}" class="btn btn-secondary mt-3">

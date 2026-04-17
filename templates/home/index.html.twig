@@ -28,6 +28,10 @@
             <a href="{{ path('app_freelancer_dashboard') }}" class="btn btn-primary btn-lg">
                 <i class="bi bi-speedometer2"></i> Accéder à mon espace
             </a>
+        {% elseif is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-speedometer2"></i> Accéder à mon espace
+            </a>
         {% endif %}
     </div>
 </div>

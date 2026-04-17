@@ -22,11 +22,11 @@ class TimeRegistered
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?user $freelance = null;
+    private ?User $freelance = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?offreMission $mission = null;
+    private ?OffreMission $mission = null;
 
     public function getId(): ?int
     {
@@ -57,24 +57,24 @@ class TimeRegistered
         return $this;
     }
 
-    public function getFreelance(): ?user
+    public function getFreelance(): ?User
     {
         return $this->freelance;
     }
 
-    public function setFreelance(?user $freelance): static
+    public function setFreelance(?User $freelance): static
     {
         $this->freelance = $freelance;
 
         return $this;
     }
 
-    public function getMission(): ?offreMission
+    public function getMission(): ?OffreMission
     {
         return $this->mission;
     }
 
-    public function setMission(?offreMission $mission): static
+    public function setMission(?OffreMission $mission): static
     {
         $this->mission = $mission;
 

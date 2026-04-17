@@ -14,12 +14,12 @@
                 <i class="bi bi-trash"></i> Supprimer
             </button>
             {% if offre.status.code == 'PUBLISHED' %}
-                <a href="{{ path('app_client_candidatures') }}" class="btn btn-primary">
+                <a href="{{ path('app_client_offre_candidatures', {id: offre.id}) }}" class="btn btn-primary">
                     <i class="bi bi-people"></i> Voir les candidatures
                 </a>
             {% endif %}
             {% if offre.status.code == 'IN_PROGRESS' %}
-                <a href="{{ path('app_client_mission_close') }}" class="btn btn-primary">
+                <a href="{{ path('app_clientmission_close', {id: offre.id}) }}" class="btn btn-primary">
                     <i class="bi bi-people"></i> Terminer
                 </a>
             {% endif %}
@@ -77,10 +77,22 @@
                                 <span class="text-muted">Non assigné</span>
                             {% endif %}
                         </dd>
-
                         {% if offre.hasFirstPayment %}
                             <dt>Acompte</dt>
-                            <dd>{{ offre.firstPaymentValue }} €</dd>
+                            {% if offre.firstPaymentActed %}
+                                <dd><strong>{{ offre.firstPaymentValue }} €</strong> <span class="badge bg-success">Acté</span></dd>
+                            {% else %}
+                                <dd>
+                                    {{ offre.firstPaymentValue }} €
+                                    <form action="#" method="post" class="d-inline ms-2">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('firstpayment_act' ~ offre.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success" disabled>
+                                            <i class="bi bi-check-circle"></i> Acter le paiement
+                                        </button>
+                                    </form>
+                                    <small class="text-muted d-block">Route à brancher</small>
+                                </dd>
+                            {% endif %}
                         {% endif %}
 
                         <dt>Créée le</dt>

@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidatures — {{ offre.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ path('app_client_offres') }}" class="text-muted text-decoration-none">
+                <i class="bi bi-arrow-left"></i> Retour aux offres
+            </a>
+            <h1 class="mt-1">Candidatures — {{ offre.title }}</h1>
+            <p class="text-muted mb-0">{{ offre.description|slice(0, 120) }}...</p>
+        </div>
+        <span class="badge bg-secondary fs-6">{{ candidacies|length }} candidature{{ candidacies|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% if candidacies is empty %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune candidature reçue pour cette offre.
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for candidacy in candidacies %}
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>
+                                <i class="bi bi-person-circle"></i>
+                                {{ candidacy.freelance.firstName }} {{ candidacy.freelance.lastName }}
+                            </strong>
+                            {% set statusColor = {
+                                'PENDING':  'warning',
+                                'ACCEPTED': 'success',
+                                'REFUSED':  'danger'
+                            } %}
+                            <span class="badge bg-{{ statusColor[candidacy.status.code] ?? 'secondary' }}">
+                                {{ candidacy.status.label }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-calendar3"></i> Postulé le {{ candidacy.createdAt|date('d/m/Y') }}
+                            </p>
+
+                            <h6>Message de motivation</h6>
+                            <p>{{ candidacy.motivationMessage }}</p>
+
+                            {% if candidacy.projectLink %}
+                                <p>
+                                    <i class="bi bi-link-45deg"></i>
+                                    <a href="{{ candidacy.projectLink }}" target="_blank">Voir le projet</a>
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        {% if candidacy.status.code == 'PENDING' %}
+                            <div class="card-footer d-flex gap-2">
+                                <form action="{{ path('app_client_candidature_accept', {id: candidacy.id}) }}" method="post" class="flex-fill">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ candidacy.id) }}">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-lg"></i> Accepter
+                                    </button>
+                                </form>
+                                <form action="{{ path('app_client_candidature_refuse', {id: candidacy.id}) }}" method="post" class="flex-fill">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ candidacy.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-x-lg"></i> Refuser
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

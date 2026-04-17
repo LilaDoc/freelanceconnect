@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Temps — {{ mission.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_mission_show', {id: mission.id}) }}">{{ mission.title }}</a></li>
+            <li class="breadcrumb-item active">Suivi du temps</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-clock"></i> Suivi du temps — {{ mission.title }}</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTimeModal">
+            <i class="bi bi-plus-lg"></i> Ajouter du temps
+        </button>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {# Total #}
+    {% set total = 0 %}
+    {% for t in timesRegistered %}
+        {% set total = total + t.time %}
+    {% endfor %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-stopwatch"></i> Temps total enregistré</span>
+        <strong>{{ total }} h</strong>
+    </div>
+
+    {# Tableau #}
+    {% if timesRegistered is empty %}
+        <div class="alert alert-secondary">
+            <i class="bi bi-info-circle"></i> Aucune entrée de temps pour cette mission.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Durée (h)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in timesRegistered %}
+                        <tr>
+                            <td>{{ t.registeredDate|date('d/m/Y') }}</td>
+                            <td><strong>{{ t.time }} h</strong></td>
+                            <td>
+                                <form action="{{ path('app_freelance_mission_time_delete', {id: mission.id}) }}" method="post"
+                                      onsubmit="return confirm('Supprimer cette entrée ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('time_delete' ~ t.id) }}">
+                                    <input type="hidden" name="time_id" value="{{ t.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+{# Modal ajout de temps #}
+<div class="modal fade" id="addTimeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Ajouter du temps</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ path('app_freelance_mission_time_add', {id: mission.id}) }}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="_token" value="{{ csrf_token('time_add' ~ mission.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" class="form-control" required
+                               value="{{ 'now'|date('Y-m-d') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Durée (heures)</label>
+                        <input type="number" name="time" class="form-control" min="1" max="24" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

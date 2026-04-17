@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\OffreMissionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: OffreMissionRepository::class)]
 class OffreMission
@@ -12,33 +13,40 @@ class OffreMission
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     private ?int $budget = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $deadline = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     private ?string $language = null;
 
     #[ORM\Column]
     private ?bool $freelanceAssigned = null;
 
     #[ORM\Column]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne]
+    #[Groups(['api_missions_recent', 'api_missions'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
@@ -64,11 +72,14 @@ class OffreMission
     #[ORM\Column(nullable: true)]
     private ?int $firstPaymentValue = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $firstPaymentActed = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
-
+    #{Groups(['api_missions_recent','api_misions'])}
     public function getTitle(): ?string
     {
         return $this->title;
@@ -92,7 +103,7 @@ class OffreMission
 
         return $this;
     }
-
+#{Groups(['api_missions_recent','api_misions'])}
     public function getBudget(): ?int
     {
         return $this->budget;
@@ -116,7 +127,7 @@ class OffreMission
 
         return $this;
     }
-
+#{Groups(['api_missions_recent','api_misions'])}
     public function getLanguage(): ?string
     {
         return $this->language;
@@ -140,7 +151,7 @@ class OffreMission
 
         return $this;
     }
-
+#{Groups(['api_missions_recent','api_misions'])}
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -232,6 +243,11 @@ class OffreMission
         return $this->hasFirstPayment;
     }
 
+    public function getHasFirstPayment(): bool
+    {
+        return $this->hasFirstPayment ?? false;
+    }
+
     public function setHasFirstPayment(bool $hasFirstPayment): static
     {
         $this->hasFirstPayment = $hasFirstPayment;
@@ -247,6 +263,18 @@ class OffreMission
     public function setFirstPaymentValue(?int $firstPaymentValue): static
     {
         $this->firstPaymentValue = $firstPaymentValue;
+
+        return $this;
+    }
+
+    public function getFirstPaymentActed(): bool
+    {
+        return $this->firstPaymentActed ?? false;
+    }
+
+    public function setFirstPaymentActed(bool $firstPaymentActed): static
+    {
+        $this->firstPaymentActed = $firstPaymentActed;
 
         return $this;
     }

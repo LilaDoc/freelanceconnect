@@ -6,6 +6,7 @@ use App\Entity\OffreMission;
 use App\Form\OffreMissionType;
 use App\Repository\OffreMissionRepository;
 use App\Service\FeatureFlagService;
+use App\Service\CandidacyService;
 use App\Service\OffreMissionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -131,6 +132,18 @@ class OffresMissionsController extends AbstractController
         return $this->render('client/offres/facture.html.twig', [
             'offre' => $offreMission,
             'facture' => $offreMission->getInvoiceNumber(),
+        ]);
+    }
+    #[Route('/{id}/candidatures', name: 'app_client_offre_candidatures', methods: ['GET'])]
+    public function candidaturesOfMission(OffreMission $offreMission, CandidacyService $candidacyService): Response
+    {
+        if ($offreMission->getClient() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette offre.');
+        }
+
+        return $this->render('client/offres/candidatures.html.twig', [
+            'offre'       => $offreMission,
+            'candidacies' => $candidacyService->getCandidacyFromOffre($offreMission),
         ]);
     }
 }

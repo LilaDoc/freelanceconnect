@@ -137,6 +137,24 @@ class OffreMissionRepository extends ServiceEntityRepository
                ->getResult()
            ;
        }
+    public function findPendingFirstPaymentByClient($client): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.client = :client')
+            ->andWhere('o.hasFirstPayment = true')
+            ->andWhere('o.firstPaymentActed = false OR o.firstPaymentActed IS NULL')
+            ->setParameter('client', $client)
+            ->orderBy('o.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+    public function findRecent():array
+    {
+        return $this->createQueryBuilder('o')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+    }
 }
 //        public function findOneBySomeField($value): ?OffreMission
 //        {

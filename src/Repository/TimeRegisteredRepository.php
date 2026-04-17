@@ -19,17 +19,15 @@ class TimeRegisteredRepository extends ServiceEntityRepository
     //    /**
     //     * @return TimeRegistered[] Returns an array of TimeRegistered objects
     //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByMission($mission): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.mission = :mission')
+            ->setParameter('mission', $mission)
+            ->orderBy('t.registeredDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
     //    public function findOneBySomeField($value): ?TimeRegistered
     //    {

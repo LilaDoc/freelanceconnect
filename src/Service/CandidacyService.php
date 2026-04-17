@@ -29,6 +29,11 @@ class CandidacyService
         ]) !== null;
     }
 
+    public function getCandidacyFromOffre(OffreMission $offreMission): array
+    {
+        return $this->candidacyRepository->findBy(['mission' => $offreMission]);
+    }
+
     public function handleCv(Candidacy $candidacy, ?UploadedFile $cvFile): void
     {
         if ($cvFile === null) {
@@ -99,4 +104,5 @@ class CandidacyService
         $this->em->remove($candidacy);
         $this->em->flush();
     }
+
 }

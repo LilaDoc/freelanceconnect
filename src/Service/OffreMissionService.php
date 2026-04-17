@@ -21,6 +21,7 @@ class OffreMissionService
         $offre->setUpdatedAt(new \DateTimeImmutable());
         $offre->setFreelanceAssigned(false);
         $offre->setHasFirstPayment(false);
+        $offre->setFirstPaymentActed(false);
         $offre->setStatus(
             $this->resolveStatus($requiresAdminValidation)
         );
@@ -54,6 +55,13 @@ class OffreMissionService
         $this->em->flush();
     }
 
+    public function addFirstPayment(OffreMission $offre, int $valuePercent): void
+    {
+        $offre->setFirstPaymentValue((int) round($offre->getBudget() * $valuePercent / 100));
+        $offre->setHasFirstPayment(true);
+        $this->em->flush();
+    }
+
     public function rejectOffre(OffreMission $offre): void
     {
         $offre->setStatus($this->statusRepository->findOneBy(['code' => 'HIDDEN']));
@@ -67,4 +75,12 @@ class OffreMissionService
         return $this->statusRepository->findOneBy(['code' => $code])
             ?? $this->statusRepository->findOneBy([]);
     }
+
+
+    public function acteFirstPayment(OffreMission $mission): void
+    {
+        $mission->setFirstPaymentActed(true);
+        $this->em->flush();
+    }
+
 }

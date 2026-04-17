@@ -58,4 +58,18 @@ final class MissionController extends AbstractController
 
         return $this->redirectToRoute('app_clientmission_show', ['id' => $offreMission->getId()]);
     }
+     #[Route('/missions/{id}/firstpayment/acte', name: 'app_client_mission_firstpayment_acte', methods: ['POST'])]
+     public function acte(
+        Request $request, OffreMission $offreMission, OffreMissionService $offreMissionService): Response{
+        if ($offreMission->getClient() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette mission.');
+        }
+        if (!$this->isCsrfTokenValid('close' . $offreMission->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_clientmission_show', ['id' => $offreMission->getId()]);
+        }
+        $offreMissionService->acteFirstPayment($offreMission);
+        $this->addFlash('success', 'Payement acté avec succès.');
+        return $this->redirectToRoute('app_clientmission_show', ['id' => $offreMission->getId()]);
+    }
 }
