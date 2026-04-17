@@ -13,6 +13,16 @@
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                 <i class="bi bi-trash"></i> Supprimer
             </button>
+            {% if offre.status.code == 'PUBLISHED' %}
+                <a href="{{ path('app_client_candidatures') }}" class="btn btn-primary">
+                    <i class="bi bi-people"></i> Voir les candidatures
+                </a>
+            {% endif %}
+            {% if offre.status.code == 'IN_PROGRESS' %}
+                <a href="{{ path('app_client_mission_close') }}" class="btn btn-primary">
+                    <i class="bi bi-people"></i> Terminer
+                </a>
+            {% endif %}
             {% if offre.invoiceNumber %}
                 <a href="{{ path('app_client_offre_facture', {id: offre.id}) }}" class="btn btn-info">
                     <i class="bi bi-receipt"></i> Voir la facture

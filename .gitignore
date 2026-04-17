@@ -17,6 +17,10 @@
 *.swo
 ###< IDE ###
 
+###> Personal notes ###
+/GUIDE_DEV.md
+###< Personal notes ###
+
 ###> OS ###
 .DS_Store
 Thumbs.db

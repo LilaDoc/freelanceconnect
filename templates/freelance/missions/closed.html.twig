@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Missions terminées{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_freelancer_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_freelance_missions') }}">Mes missions</a></li>
+            <li class="breadcrumb-item active">Missions terminées</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Missions terminées</h1>
+        <span class="badge bg-secondary fs-6">{{ missions|length }} mission{{ missions|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    {% if missions is empty %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Aucune mission terminée pour le moment.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for mission in missions %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-check-circle"></i> Terminée</span>
+                            <small>{{ mission.deadline|date('d/m/Y') }}</small>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ mission.title }}</h5>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-folder"></i> {{ mission.category.label ?? '-' }}
+                                &nbsp;|&nbsp;
+                                <i class="bi bi-translate"></i> {{ mission.language ?? 'Non spécifié' }}
+                            </p>
+                            <p class="card-text">
+                                {{ mission.description|slice(0, 120) }}{% if mission.description|length > 120 %}...{% endif %}
+                            </p>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-cash text-success"></i> <strong>{{ mission.budget }} €</strong></li>
+                                <li>
+                                    <i class="bi bi-person"></i>
+                                    Client : {{ mission.client ? mission.client.firstName : '-' }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ path('app_freelance_mission_show', {id: mission.id}) }}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-eye"></i> Voir détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <a href="{{ path('app_freelancer_dashboard') }}" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left"></i> Retour au dashboard
+    </a>
+</div>
+{% endblock %}

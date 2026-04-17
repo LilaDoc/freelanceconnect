@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Candidature de {{ candidature.freelance.firstName }} {{ candidature.freelance.lastName }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_client_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_client_offre_candidatures', {id: candidature.mission.id}) }}">Candidatures</a></li>
+            <li class="breadcrumb-item active">{{ candidature.freelance.firstName }} {{ candidature.freelance.lastName }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i> Candidature
+                    </h5>
+                    <span class="badge bg-{{ candidature.status.code == 'ACCEPTED' ? 'success' : (candidature.status.code == 'REFUSED' ? 'danger' : 'warning') }}">
+                        {{ candidature.status.label }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Message de motivation</h6>
+                    <div class="p-3 bg-light rounded mb-4">
+                        {{ candidature.motivationMessage|nl2br }}
+                    </div>
+
+                    <h6 class="text-muted mb-3">Lien projet</h6>
+                    <p>
+                        <a href="{{ candidature.projectLink }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-link-45deg"></i> Voir le projet
+                        </a>
+                    </p>
+
+                    {% if candidature.CV %}
+                        <h6 class="text-muted mb-3">CV</h6>
+                        <p>
+                            <a href="{{ path('app_client_candidature_cv', {id: candidature.id}) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-file-earmark-pdf"></i> Télécharger le CV
+                            </a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if candidature.status.code == 'PENDING' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-check2-square"></i> Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ path('app_client_candidature_accept', {id: candidature.id}) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ candidature.id) }}">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-lg"></i> Accepter
+                            </button>
+                        </form>
+                        <form action="{{ path('app_client_candidature_refuse', {id: candidature.id}) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ candidature.id) }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-lg"></i> Refuser
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Freelance</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>{{ candidature.freelance.firstName }} {{ candidature.freelance.lastName }}</strong>
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-envelope"></i> 
+                        <a href="mailto:{{ candidature.freelance.email }}">{{ candidature.freelance.email }}</a>
+                    </p>
+                    <p class="mb-0 text-muted">
+                        <i class="bi bi-calendar"></i> Candidature envoyée le {{ candidature.createdAt|date('d/m/Y à H:i') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-briefcase"></i> Offre concernée</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ candidature.mission.title }}</h6>
+                    <p class="text-muted small">{{ candidature.mission.description|slice(0, 150) }}...</p>
+                    <a href="{{ path('app_client_offre_show', {id: candidature.mission.id}) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> Voir l'offre
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ path('app_client_offre_candidatures', {id: candidature.mission.id}) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour aux candidatures
+        </a>
+    </div>
+</div>
+{% endblock %}

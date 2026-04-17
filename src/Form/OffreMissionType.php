@@ -54,13 +54,14 @@ class OffreMissionType extends AbstractType
             ->add('deadline', DateType::class, [
                 'label' => 'Date limite',
                 'widget' => 'single_text',
-                'constraints' => [
-                    new NotBlank(['message' => 'La date limite est obligatoire.']),
-                    new GreaterThan([
-                        'value' => 'today',
-                        'message' => 'La date limite doit être dans le futur.',
-                    ]),
-                ],
+                'required' => false,
+                // 'constraints' => [
+                        
+                //     new GreaterThan([
+                //         'value' => 'today',
+                //         'message' => 'La date limite doit être dans le futur.',
+                //     ]),
+                // ],
             ])
             ->add('language', TextType::class, [
                 'label' => 'Langue requise',

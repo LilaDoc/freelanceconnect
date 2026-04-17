@@ -6,8 +6,7 @@ use App\Entity\Candidacy;
 use App\Entity\OffreMission;
 use App\Form\CandidacyType;
 use App\Repository\CandidacyRepository;
-use App\Repository\CandidacyStatusRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\CandidacyService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,14 +20,13 @@ class CandidatureController extends AbstractController
     #[Route('/candidatures', name: 'app_freelance_candidatures', methods: ['GET'])]
     public function index(CandidacyRepository $candidacyRepository): Response
     {
-        $user = $this->getUser();
         $candidatures = $candidacyRepository->findBy(
-            ['freelance' => $user],
+            ['freelance' => $this->getUser()],
             ['createdAt' => 'DESC']
         );
 
         return $this->render('freelance/candidatures/index.html.twig', [
-            'user' => $user,
+            'user' => $this->getUser(),
             'candidatures' => $candidatures,
         ]);
     }
@@ -37,19 +35,9 @@ class CandidatureController extends AbstractController
     public function postuler(
         Request $request,
         OffreMission $offreMission,
-        EntityManagerInterface $entityManager,
-        CandidacyStatusRepository $statusRepository,
-        CandidacyRepository $candidacyRepository
+        CandidacyService $candidacyService
     ): Response {
-        $user = $this->getUser();
-
-        // Vérifier si le freelancer a déjà postulé
-        $existingCandidacy = $candidacyRepository->findOneBy([
-            'freelance' => $user,
-            'mission' => $offreMission,
-        ]);
-
-        if ($existingCandidacy) {
+        if ($candidacyService->freelanceHasApplied($this->getUser(), $offreMission)) {
             $this->addFlash('warning', 'Vous avez déjà postulé à cette offre.');
             return $this->redirectToRoute('app_freelance_offre_show', ['id' => $offreMission->getId()]);
         }
@@ -59,28 +47,8 @@ class CandidatureController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Traitement du CV
-            $cvFile = $form->get('cv')->getData();
-            if ($cvFile) {
-                $cvContent = file_get_contents($cvFile->getPathname());
-                $candidacy->setCV($cvContent);
-            }
-
-            // Définir les valeurs automatiques
-            $candidacy->setFreelance($user);
-            $candidacy->setMission($offreMission);
-            $candidacy->setCreatedAt(new \DateTimeImmutable());
-
-            // Statut par défaut : PENDING
-            
-            $status = $statusRepository->findOneBy(['code' => 'PENDING']);
-            if ($status === null) {
-                $status = $statusRepository->findOneBy([]);
-            }
-            $candidacy->setStatus($status);
-
-            $entityManager->persist($candidacy);
-            $entityManager->flush();
+            $candidacyService->handleCv($candidacy, $form->get('cv')->getData());
+            $candidacyService->submitCandidacy($this->getUser(), $offreMission, $candidacy);
 
             $this->addFlash('success', 'Votre candidature a été envoyée avec succès !');
             return $this->redirectToRoute('app_freelance_offre_show', ['id' => $offreMission->getId()]);
@@ -93,12 +61,9 @@ class CandidatureController extends AbstractController
     }
 
     #[Route('/candidatures/{id}', name: 'app_freelance_candidature_show', methods: ['GET'])]
-    public function show(Candidacy $candidacy): Response
+    public function show(Candidacy $candidacy, CandidacyService $candidacyService): Response
     {
-        // Vérifier que la candidature appartient au freelancer connecté
-        if ($candidacy->getFreelance() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette candidature.');
-        }
+        $candidacyService->checkFreelanceOwnCandidacy($this->getUser(), $candidacy);
 
         return $this->render('freelance/candidatures/show.html.twig', [
             'candidature' => $candidacy,
@@ -109,26 +74,21 @@ class CandidatureController extends AbstractController
     public function delete(
         Request $request,
         Candidacy $candidacy,
-        EntityManagerInterface $entityManager
+        CandidacyService $candidacyService
     ): Response {
-        if ($candidacy->getFreelance() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette candidature.');
-        }
+        $candidacyService->checkFreelanceOwnCandidacy($this->getUser(), $candidacy);
 
-        // Vérifier le token CSRF
         if (!$this->isCsrfTokenValid('delete' . $candidacy->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('app_freelance_candidatures');
         }
 
-        // On ne peut supprimer que si le statut est PENDING
-        if ($candidacy->getStatus()?->getCode() !== 'PENDING') {
+        if (!$candidacyService->statusIsPending($candidacy)) {
             $this->addFlash('error', 'Vous ne pouvez pas retirer une candidature déjà traitée.');
             return $this->redirectToRoute('app_freelance_candidatures');
         }
 
-        $entityManager->remove($candidacy);
-        $entityManager->flush();
+        $candidacyService->deleteCandidacy($candidacy);
 
         $this->addFlash('success', 'Candidature retirée.');
         return $this->redirectToRoute('app_freelance_candidatures');

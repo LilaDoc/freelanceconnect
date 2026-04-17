@@ -53,6 +53,10 @@ class AppFixtures extends Fixture
             ['code' => 'PENDING', 'label' => 'En attente de validation'],
             ['code' => 'PUBLISHED', 'label' => 'Publiée'],
             ['code' => 'HIDDEN', 'label' => 'Masquée'],
+            ['code' => 'IN_PROGRESS', 'label' => 'En cours'],
+            ['code' => 'COMPLETED', 'label' => 'Terminée'],
+            ['code' => 'INVOICED', 'label' => 'Facturée'],
+            ['code' => 'PAID', 'label' => 'Payée'],
         ];
 
         foreach ($statuses as $data) {

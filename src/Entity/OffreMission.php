@@ -23,7 +23,7 @@ class OffreMission
     #[ORM\Column]
     private ?int $budget = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $deadline = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -110,7 +110,7 @@ class OffreMission
         return $this->deadline;
     }
 
-    public function setDeadline(\DateTime $deadline): static
+    public function setDeadline(?\DateTime $deadline): static
     {
         $this->deadline = $deadline;
 

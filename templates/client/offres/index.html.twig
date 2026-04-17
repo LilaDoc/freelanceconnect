@@ -56,6 +56,7 @@
                                 <a href="{{ path('app_client_offre_show', {id: offre.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                {% if not offre.freelanceAssigned %}
                                 <a href="{{ path('app_client_offre_edit', {id: offre.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
                                     <i class="bi bi-pencil"></i>
                                 </a>
@@ -64,6 +65,7 @@
                                         data-bs-target="#deleteModal{{ offre.id }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

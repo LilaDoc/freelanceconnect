@@ -5,6 +5,7 @@ namespace App\Controller\Front\Freelance;
 use App\Entity\OffreMission;
 use App\Repository\OffreMissionRepository;
 use App\Repository\OffreMissionStatusRepository;
+use App\Repository\CandidacyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,10 +32,16 @@ final class OffresMissionController extends AbstractController
     }
 
     #[Route('/offres/{id}', name: 'app_freelance_offre_show', methods: ['GET'])]
-    public function show(OffreMission $offreMission): Response
+    public function show(OffreMission $offreMission, CandidacyRepository $candidacyRepository): Response
     {
+        // Verifier que le user n'a pas deja postulé à cette offre
+        $user = $this->getUser();
+        $hasApplied = $candidacyRepository->findOneBy(['mission' => $offreMission, 'freelance' => $user]) !== null;
+
         return $this->render('freelance/offres/show.html.twig', [
             'offre' => $offreMission,
+            'user' => $user,
+            'hasApplied' => $hasApplied,
         ]);
     }
 }

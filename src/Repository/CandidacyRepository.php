@@ -16,6 +16,40 @@ class CandidacyRepository extends ServiceEntityRepository
         parent::__construct($registry, Candidacy::class);
     }
 
+    public function findByClientWithFilters($client, array $filters): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->join('c.mission', 'm')
+            ->join('c.freelance', 'f')
+            ->join('c.status', 's')
+            ->andWhere('m.client = :client')
+            ->setParameter('client', $client)
+            ->orderBy('c.createdAt', 'DESC');
+
+        if (!empty($filters['offre'])) {
+            $qb->andWhere('m = :offre')
+               ->setParameter('offre', $filters['offre']);
+        }
+
+        if (!empty($filters['status'])) {
+            $qb->andWhere('s.code = :status')
+               ->setParameter('status', $filters['status']);
+        }
+
+        if (!empty($filters['dateFrom'])) {
+            $qb->andWhere('c.createdAt >= :dateFrom')
+               ->setParameter('dateFrom', $filters['dateFrom']);
+        }
+
+        if (!empty($filters['freelance'])) {
+            $search = '%' . strtolower($filters['freelance']) . '%';
+            $qb->andWhere('LOWER(f.firstName) LIKE :name OR LOWER(f.lastName) LIKE :name')
+               ->setParameter('name', $search);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Candidacy[] Returns an array of Candidacy objects
     //     */
@@ -41,6 +75,7 @@ class CandidacyRepository extends ServiceEntityRepository
                ->getResult()
            ;
        }
+
 
     //    public function findOneBySomeField($value): ?Candidacy
     //    {

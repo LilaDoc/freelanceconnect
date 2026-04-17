@@ -3,11 +3,10 @@
 namespace App\Controller\Front\Client;
 
 use App\Entity\OffreMission;
-use App\Entity\OffreMissionStatus;
 use App\Form\OffreMissionType;
 use App\Repository\OffreMissionRepository;
-use App\Repository\OffreMissionStatusRepository;
 use App\Service\FeatureFlagService;
+use App\Service\OffreMissionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,28 +19,26 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class OffresMissionsController extends AbstractController
 {
     public function __construct(
-        private FeatureFlagService $featureFlagService
+        private FeatureFlagService $featureFlagService,
+        private OffreMissionService $offreMissionService,
     ) {
     }
 
-    // Liste des offres de missions du client
     #[Route('/offres', name: 'app_client_offres', methods: ['GET'])]
     public function index(OffreMissionRepository $offreMissionRepository): Response
     {
-        $user = $this->getUser();
-        $offres = $offreMissionRepository->findByClient($user);
-
         return $this->render('client/offres/index.html.twig', [
-            'user' => $user,
-            'offres' => $offres,
+            'user' => $this->getUser(),
+            'offres' => $offreMissionRepository->findByClientAndStatusCodes(
+                $this->getUser(),
+                ['PENDING', 'PUBLISHED']
+            ),
         ]);
     }
 
-    // Détails d'une offre de mission
     #[Route('/offres/{id}', name: 'app_client_offre_show', methods: ['GET'])]
     public function show(OffreMission $offreMission): Response
     {
-        // Vérifier que l'offre appartient au client connecté
         if ($offreMission->getClient() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette offre.');
         }
@@ -51,45 +48,22 @@ class OffresMissionsController extends AbstractController
         ]);
     }
 
-    // Créer une nouvelle offre de mission
     #[Route('/offres/new', name: 'app_client_offre_new', methods: ['GET', 'POST'], priority: 1)]
-    public function new(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        OffreMissionStatusRepository $statusRepository
-    ): Response {
+    public function new(Request $request): Response
+    {
         $offreMission = new OffreMission();
-        
         $form = $this->createForm(OffreMissionType::class, $offreMission);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Définir les valeurs par défaut
-            $offreMission->setClient($this->getUser());
-            $offreMission->setCreatedAt(new \DateTimeImmutable());
-            $offreMission->setUpdatedAt(new \DateTimeImmutable());
-            $offreMission->setFreelanceAssigned(false);
-            $offreMission->setHasFirstPayment(false);
-            
-            // Définir le statut selon le feature flag
-            if ($this->featureFlagService->isValidationOffreAdminEnabled()) {
-                // Validation admin requise : statut "En attente de validation"
-                $statusCode = 'PENDING';
-                $flashMessage = 'Offre de mission créée. Elle sera visible après validation par un administrateur.';
-            } else {
-                // Pas de validation admin : publication directe
-                $statusCode = 'PUBLISHED';
-                $flashMessage = 'Offre de mission créée et publiée avec succès.';
-            }
-            
-            $status = $statusRepository->findOneBy(['code' => $statusCode]) 
-                ?? $statusRepository->findOneBy([]);
-            $offreMission->setStatus($status);
-            
-            $entityManager->persist($offreMission);
-            $entityManager->flush();
-            
+            $requiresValidation = $this->featureFlagService->isValidationOffreAdminEnabled();
+            $this->offreMissionService->initOffre($offreMission, $this->getUser(), $requiresValidation);
+
+            $flashMessage = $requiresValidation
+                ? 'Offre créée. Elle sera visible après validation par un administrateur.'
+                : 'Offre de mission créée et publiée avec succès.';
             $this->addFlash('success', $flashMessage);
+
             return $this->redirectToRoute('app_client_offres');
         }
 
@@ -99,14 +73,9 @@ class OffresMissionsController extends AbstractController
         ]);
     }
 
-    // Éditer une offre de mission
     #[Route('/offres/{id}/edit', name: 'app_client_offre_edit', methods: ['GET', 'POST'])]
-    public function edit(
-        Request $request,
-        OffreMission $offreMission,
-        EntityManagerInterface $entityManager,
-        OffreMissionStatusRepository $statusRepository
-    ): Response {
+    public function edit(Request $request, OffreMission $offreMission): Response
+    {
         if ($offreMission->getClient() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette offre.');
         }
@@ -115,20 +84,11 @@ class OffresMissionsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $offreMission->setUpdatedAt(new \DateTimeImmutable());
-            
-            // Définir le statut selon le feature flag
-            if ($this->featureFlagService->isValidationOffreAdminEnabled()) {
-                $statusCode = 'PENDING';
-            } else {
-                $statusCode = 'PUBLISHED';
-            }
-            $status = $statusRepository->findOneBy(['code' => $statusCode]) 
-                ?? $statusRepository->findOneBy([]);
-            $offreMission->setStatus($status);
-            
-            $entityManager->flush();
-            
+            $this->offreMissionService->updateOffre(
+                $offreMission,
+                $this->featureFlagService->isValidationOffreAdminEnabled()
+            );
+
             $this->addFlash('success', 'Offre de mission modifiée avec succès.');
             return $this->redirectToRoute('app_client_offres');
         }
@@ -139,7 +99,6 @@ class OffresMissionsController extends AbstractController
         ]);
     }
 
-    // Supprimer une offre de mission
     #[Route('/offres/{id}/delete', name: 'app_client_offre_delete', methods: ['POST'])]
     public function delete(
         Request $request,
@@ -150,7 +109,6 @@ class OffresMissionsController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette offre.');
         }
 
-        // Vérifier le token CSRF avant suppression
         if (!$this->isCsrfTokenValid('delete' . $offreMission->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide. La suppression a été annulée.');
             return $this->redirectToRoute('app_client_offres');
@@ -163,7 +121,6 @@ class OffresMissionsController extends AbstractController
         return $this->redirectToRoute('app_client_offres');
     }
 
-    // Voir la facture d'une offre de mission
     #[Route('/offres/{id}/facture', name: 'app_client_offre_facture', methods: ['GET'])]
     public function facture(OffreMission $offreMission): Response
     {

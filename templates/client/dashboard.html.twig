@@ -17,15 +17,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Candidatures</h5>
-                    <p class="card-text">Consultez les candidatures reçues</p>
-                    <a href="{{ path('app_client_candidatures')}}" class="btn btn-primary">Voir les candidatures</a>
-                </div>
-            </div>
-        </div>
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
@@ -36,5 +28,14 @@
             </div>
         </div>
     </div>
+            <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-clock-history"></i> Mes Missions</h5>
+                    <p class="card-text">Consulter mes missions</p>
+                    <a href="{{ path('app_client_missions') }}" class="btn btn-primary ">Voir mes missions</a>
+                </div>
+            </div>
+        </div>
 </div>
 {% endblock %}

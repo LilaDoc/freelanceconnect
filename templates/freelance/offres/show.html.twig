@@ -64,9 +64,11 @@
             </div>
         </div>
         <div class="card-footer">
+            {% if not offre.freelanceAssigned and not hasApplied  %}
             <a href="{{ path('app_freelance_offre_postuler', {id: offre.id}) }}" class="btn btn-success">
                 <i class="bi bi-send"></i> Postuler à cette offre
             </a>
+            {% endif %}
             <a href="{{ path('app_freelance_offres') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Retour aux offres
             </a>
